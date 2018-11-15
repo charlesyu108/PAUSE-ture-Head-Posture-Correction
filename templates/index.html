@@ -11,8 +11,7 @@
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script>
 
-  $SPOTIFY_AUTH_TOKEN = "";
-  // Server/ domain root
+  $SPOTIFY_AUTH_TOKEN = "BQDVlCy2hAZ8XcSFGHtXqqfUy4W9C-ukmQkid8imG1cZ4pSgstZsthortyvxrs0CjmGHw-NXPE1-Kj74u_tae4eq2wAy8LJ4WqB7oJqycXMJQ6b4ogsf4lXadM0eu6p7uxbCQj79puxkSA8A5RlebTCjIkSADXE"
   $SCRIPT_ROOT = {{request.script_root|tojson|safe}};
 
   // This is the main code to be run.
@@ -93,8 +92,8 @@
    */
   function sensor_read_action(resp, controls) {
     console.log(resp["read"]);
-    // spotify_read_action(resp, controls);
-    no_op_read_action(resp, controls);
+    spotify_read_action(resp, controls);
+    // no_op_read_action(resp, controls);
   };
 
   // ======= Potential feedback actions =======

@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, render_template, request, url_for
 from threading import Thread
-import random, time, urllib.parse, requests, base64
+import random, time, urllib.parse, requests, base64, configparser
 
-#TODO: Obscure this:
-CLIENT_ID="101532fe5baf452e9f5a4b50f1cf6a36"
-CLIENT_SECRET="d731e2971dce4e6d976cb0885194e778"
+config = configparser.ConfigParser()
+config.read("config.ini")
+SPOTIFY_CLIENT_ID = config["DEFAULT"]["SPOTIFY_CLIENT_ID"]
+SPOTIFY_CLIENT_SECRET = config["DEFAULT"]["SPOTIFY_CLIENT_SECRET"]
 
 app = Flask(__name__)
 sensor_read = (0,0) # TODO: Temp dummy datatype
@@ -36,7 +37,7 @@ def authSpotify():
     scope_string = (" ").join(scopes)
     params = {
         "response_type": "code",
-        "client_id": CLIENT_ID,
+        "client_id": SPOTIFY_CLIENT_ID,
         "scope": scope_string,
         "redirect_uri": url_for("spotifyCallback", _external=True)
     }
@@ -49,7 +50,7 @@ def authSpotify():
 def spotifyCallback():
     """Callback endpoint for approved auth flow. Generates Auth Token."""
     auth_code = request.args["code"]
-    unencoded_client_bytestring = (CLIENT_ID + ":" + CLIENT_SECRET).encode()
+    unencoded_client_bytestring = (SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET).encode()
     auth_header_string = "Basic {}".format(base64.b64encode(unencoded_client_bytestring).decode())
     resp = requests.post("https://accounts.spotify.com/api/token",
     data = {
