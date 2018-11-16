@@ -43,7 +43,7 @@ def getSensorData():
 @app.route("/spotify/auth/grant", methods = ["GET"])
 def authSpotify():
     """ Serves the formatted url for Spotify OAuth. """
-    scopes = ['streaming', 'user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing']
+    scopes = ["streaming", "user-read-birthdate", "user-read-email", "user-read-private"]
     scope_string = (" ").join(scopes)
     params = {
         "response_type": "code",

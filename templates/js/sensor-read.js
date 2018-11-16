@@ -1,4 +1,5 @@
 var SensorReader = (function ($, w) {
+  $SCRIPT_ROOT = {{request.script_root|tojson|safe}}
 
   var isActive = false;
   var controls = {};

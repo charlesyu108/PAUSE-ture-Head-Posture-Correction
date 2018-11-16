@@ -1,4 +1,5 @@
 var SpotifyWebPlayback = (function ($, w) {
+  $SCRIPT_ROOT = {{request.script_root|tojson|safe}}
 
   async function spotifyGetAccessToken() {
     var deferred_token = $.Deferred();
