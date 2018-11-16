@@ -19,10 +19,20 @@ def readSensorLoop():
         sensor_read = (random.randint(0, 10), random.randint(0, 10))
         time.sleep(1.0)
 
-# ========= Rendered Site Pages ==========
+# ========= Rendered Templates ==========
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/js/spotify-maker.js")
+def spotifyMakerjs():
+    """ Serves the dynamic js script. """
+    return render_template("js/spotify-maker.js")
+
+@app.route("/js/sensor-read.js")
+def sensorReaderjs():
+    """ Serves the dynamic js script. """
+    return render_template("/js/sensor-read.js")
 
 # ============ Service Endpoints ============
 @app.route("/sensor/read", methods = ["GET"])
