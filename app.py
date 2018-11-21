@@ -6,6 +6,12 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 SPOTIFY_CLIENT_ID = config["DEFAULT"]["SPOTIFY_CLIENT_ID"]
 SPOTIFY_CLIENT_SECRET = config["DEFAULT"]["SPOTIFY_CLIENT_SECRET"]
+IS_RPI_SERVER = int(config["DEFAULT"]["IS_RPI_SERVER"])
+
+print("Configuring for a {} server".format("RPI" if IS_RPI_SERVER else "non-RPI"))
+
+if IS_RPI_SERVER:
+    import sensor
 
 app = Flask(__name__)
 sensor_read = (0,0) # TODO: Temp dummy datatype
@@ -13,10 +19,14 @@ access_token = None
 refresh_token = None
 
 # =========== Sensing Loop =============
+def mockSensorRead():
+    """ For use when developing on non-raspberry pi """
+    return (random.randint(0, 10), random.randint(0, 10))
+
 def readSensorLoop():
+    global sensor_read
     while True:
-        global sensor_read
-        sensor_read = (random.randint(0, 10), random.randint(0, 10))
+        sensor_read = sensor.readSensor() if IS_RPI_SERVER else mockSensorRead()
         time.sleep(1.0)
 
 # ========= Rendered Templates ==========
