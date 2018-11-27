@@ -1,0 +1,10 @@
+.spotify-btn , .spotify-btn:hover{
+  background-color: #1ed761;
+}
+
+.spotify-logo{
+  margin-left: 2px;
+  padding-bottom: 3px;
+  height:auto;
+  width:25px;
+}

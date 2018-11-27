@@ -26,7 +26,7 @@ def mockSensorRead():
 def readSensorLoop():
     global sensor_read
     while True:
-        sensor_read = sensor.readSensor() if IS_RPI_SERVER else mockSensorRead()
+        sensor_read = sensor.readSensors() if IS_RPI_SERVER else mockSensorRead()
         time.sleep(1.0)
 
 # ========= Rendered Templates ==========

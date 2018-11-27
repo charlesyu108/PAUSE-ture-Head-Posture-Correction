@@ -1,23 +1,21 @@
-# https://learn.adafruit.com/adafruit-vl6180x-time-of-flight-micro-lidar-distance-sensor-breakout/python-circuitpython?fbclid=IwAR0xaH46MN52O-F4GGNhsyI8-7WIeig0wsy4pUdKLb2weZFTG3MGKgPAv-I
+#Modified from: https://learn.adafruit.com/adafruit-vl6180x-time-of-flight-micro-lidar-distance-sensor-breakout/python-circuitpython?fbclid=IwAR0xaH46MN52O-F4GGNhsyI8-7WIeig0wsy4pUdKLb2weZFTG3MGKgPAv-I
 
-# Demo of reading the range and lux from the VL6180x distance sensor and
-# printing it every second.
-# Author: Tony DiCola
-import time
-import board
-import busio
-import adafruit_vl6180x
+import time, board, busio, adafruit_vl6180x, adafruit_tca9548a
 
 # Create I2C bus.
 i2c = busio.I2C(board.SCL, board.SDA)
 
-# Create sensor instance.
-sensor = adafruit_vl6180x.VL6180X(i2c)
+# Init TCA multiplexer
+tca = adafruit_tca9548a.TCA9548A(i2c)
 
-def readSensor():
-    range_mm = sensor.range
-    light_lux = sensor.read_lux(adafruit_vl6180x.ALS_GAIN_1)
-    return (range_mm, range_mm)
+# Init sensors from tca channels
+sensor_left = adafruit_vl6180x.VL6180X(tca[2])
+sensor_right = adafruit_vl6180x.VL6180X(tca[6])
+
+def readSensors():
+    left_mm = sensor_left.range
+    right_mm = sensor_right.range
+    return (left_mm, right_mm)
 
 
 # # Main loop prints the range and lux every second:
