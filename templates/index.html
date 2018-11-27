@@ -4,133 +4,194 @@
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="{{ url_for('spotifyMakerjs') }}"></script>
   <script src="{{ url_for('sensorReaderjs') }}"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"></link>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}"><link/>
 </head>
+
 <body>
-  <button id="auth">Authorize With Spotify</button>
-  <div>
-    Feedback Options: <br>
-    <input type="radio" name="feedback" value="no-op" checked="checked"> None <br>
-    <input type="radio" name="feedback" value="spotify-pause"> Spotify - Pause Interrupts <br>
-    <input type="radio" name="feedback" value="spotify-volume"> Spotify - Volume Change Interrupts<br>
-    <input type="radio" name="feedback" value="beep"> Beep <br>
+  <div class="jumbotron jumbotron-fluid mb-3 text-center">
+    <h1 class="display-4">PAUSE-ture Head Posture Correction</h1>
+    <p class="lead">A project for INFO 4120 &mdash; Chelsea Chan & Charles Yu</p>
   </div>
-  <button id="start">Start</button>
-  <button id="stop">Stop</button>
-  <div>
-    <p> Left: <span id="left"> N/A </span> mm,  Right: <span id="right"> N/A </span> mm</p>
-    <p> STATUS: <span id="status"> N/A </span></p>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-header"> </div>
+          <div class="card-body">
+            <h5 class="card-title"> Calibration Controls</h5>
+            <button id="callibrate" class="btn btn-primary">Callibrate [TODO!] </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-header"> </div>
+          <div class="card-body">
+            <h5 class="card-title"> Feedback Options</h5>
+            <input type="radio" name="feedback" value="no-op" checked="checked"> None <br>
+            <input type="radio" name="feedback" value="spotify-pause"> Spotify - Pause Interrupts <br>
+            <input type="radio" name="feedback" value="spotify-volume"> Spotify - Volume Change Interrupts<br>
+            <input type="radio" name="feedback" value="beep"> Beep <br>
+            <button id="auth" class="btn btn-secondary my-1 spotify-btn">Authorize With Spotify <img class="spotify-logo" src="https://seeklogo.com/images/S/spotify-logo-7839B39C1B-seeklogo.com.png"/></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-sm-12 mt-5">
+        <h2 class="display-4 text-center"> STATUS: <span id="status"> N/A </span></h2>
+        <p class="text-center"> Left: <span id="left"> N/A </span> mm, Right: <span id="right"> N/A </span> mm</p>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="controls mx-auto">
+        <button id="start" class="btn btn-primary">Start</button>
+        <button id="stop" class="btn btn-secondary">Stop</button>
+      </div>
+      <p id="spotify-help-text" style="visibility:hidden">You've selected a Spotify feedback option. After you start PAUSE-ture,
+        go to your Spotify app. Connect to
+        <span class="badge badge-secondary"> PAUSE-ture Head Posture Correction </span>
+        and select your music preferences. Start your music and PAUSE-ture
+        will take care of the rest!
+      </p>
+    </div>
   </div>
-  <script>
+  <div>
 
-  // This is the main code to be run.
-  $(function() {
-    window.onSpotifyWebPlaybackSDKReady = () => {
 
-      // INIT
-      let controls = {"left": $("#left"), "right": $("#right"), "status": $("#status")};
-      SensorReader.setControls(controls);
-      SensorReader.setAction(displayUpdateAction);
 
-      // Setting up Spotify Authorization Callback
-      $("#auth").on("click", () => {
-        SpotifyWebPlayback.createPlayer().then(player => {
-          controls["player"] = player;
-        });
+
+
+
+
+
+
+
+    <script>
+      // This is the main code to be run.
+      $(function() {
+        window.onSpotifyWebPlaybackSDKReady = () => {
+
+          // INIT
+          let controls = {
+            "left": $("#left"),
+            "right": $("#right"),
+            "status": $("#status")
+          };
+          SensorReader.setControls(controls);
+          SensorReader.setAction(displayUpdateAction);
+
+          // Setting up Spotify Authorization Callback
+          $("#auth").on("click", () => {
+            SpotifyWebPlayback.createPlayer().then(player => {
+              controls["player"] = player;
+            });
+          });
+
+          function isSpotifyAuth() {
+            if (controls.player == null) {
+              alert("You need to authorize with Spotify first!");
+              return false;
+            }
+            return true;
+          }
+
+
+          // Setting up actions for different feedback options
+          $('input[type=radio][name=feedback]').change(function() {
+            switch (this.value) {
+              case "spotify-volume":
+                if (isSpotifyAuth()) {
+                  SensorReader.setAction(spotifyVolumeAction);
+                } else {
+                  $('input[type=radio][name=feedback][value=no-op]').prop("checked", true);
+                }
+                break;
+              case "spotify-pause":
+                if (isSpotifyAuth()) {
+                  SensorReader.setAction(spotifyPauseAction);
+                } else {
+                  $('input[type=radio][name=feedback][value=no-op]').prop("checked", true);
+                }
+                break;
+              case "beep":
+                SensorReader.setAction(beepAction);
+                break;
+              case "no-op":
+              default:
+                SensorReader.setAction(displayUpdateAction);
+                break;
+            }
+
+            if ($('input[type=radio][name=feedback][value=spotify-volume]').prop("checked") ||
+              $('input[type=radio][name=feedback][value=spotify-pause]').prop("checked")) {
+              $('#spotify-help-text').css("visibility", "visible");
+            } else {
+              $('#spotify-help-text').css("visibility", "hidden");
+            }
+
+          });
+          // Setting up actions for start and stop
+          $("#start").on("click", SensorReader.start);
+          $("#stop").on("click", SensorReader.stop);
+        }
       });
 
-      function isSpotifyAuth() {
-        if (controls.player == null) {
-          alert("You need to authorize with Spotify first!");
-          return false;
-        }
-        return true;
+      // ============= ACTIONS ===========
+      function isBadPosture(resp) {
+        return resp["read"][0] < 2;
       }
 
+      function displayUpdateAction(resp, controls) {
+        controls.left.text(resp["read"][0]);
+        controls.right.text(resp["read"][1]);
+        controls.status.text(isBadPosture(resp) ? "Correct your posture." : "OK!");
+      }
 
-      // Setting up actions for different feedback options
-      $('input[type=radio][name=feedback]').change(function() {
-        switch (this.value) {
-          case "spotify-volume":
-            if (isSpotifyAuth()) {
-              SensorReader.setAction(spotifyVolumeAction);
-            } else {
-              $('input[type=radio][name=feedback][value=no-op]').prop("checked",true);
-            }
-            break;
-          case "spotify-pause":
-            if (isSpotifyAuth()) {
-              SensorReader.setAction(spotifyPauseAction);
-            } else {
-              $('input[type=radio][name=feedback][value=no-op]').prop("checked",true);
-            }
-            break;
-          case "beep":
-            SensorReader.setAction(beepAction);
-            break;
-          case "no-op":
-          default:
-            SensorReader.setAction(displayUpdateAction);
-            break;
+      function spotifyPauseAction(resp, controls) {
+        displayUpdateAction(resp, controls);
+        var player = controls.player;
+        if (player == null) {
+          throw "Spotify Needs to be Authorized first!"
+        } else {
+          player.connect();
+          if (isBadPosture(resp)) {
+            player.pause();
+          } else {
+            player.resume();
+          }
         }
-        });
+      }
 
-      // Setting up actions for start and stop
-      $("#start").on("click", SensorReader.start);
-      $("#stop").on("click", SensorReader.stop);
-    }
-  });
+      function spotifyVolumeAction(resp, controls) {
+        displayUpdateAction(resp, controls);
+        var player = controls.player;
+        if (player == null) {
+          throw "Spotify Needs to be Authorized first!"
+        } else {
+          player.connect();
+          if (isBadPosture(resp)) {
+            player.setVolume(0.5);
+          } else {
+            player.setVolume(1.0);
+          }
+        }
+      }
 
-  // ============= ACTIONS ===========
-  function isBadPosture(resp) {
-    return resp["read"][0] < 2;
-  }
+      function beepAction(resp, controls) {
+        displayUpdateAction(resp, controls);
+        if (isBadPosture(resp)) {
+          beep();
+        }
+      }
 
-  function displayUpdateAction(resp, controls) {
-      controls.left.text(resp["read"][0]);
-      controls.right.text(resp["read"][1]);
-      controls.status.text(isBadPosture(resp)? "Correct your posture." : "OK!");
-  }
-
-  function spotifyPauseAction(resp, controls) {
-    displayUpdateAction(resp, controls);
-    var player = controls.player;
-    if (player == null) {
-      throw "Spotify Needs to be Authorized first!"
-    } else {
-      player.connect();
-      if (isBadPosture(resp)) {
-         player.pause();
-       } else {
-         player.resume();
-       }
-    }
-  }
-
-  function spotifyVolumeAction(resp, controls) {
-    displayUpdateAction(resp, controls);
-    var player = controls.player;
-    if (player == null) {
-      throw "Spotify Needs to be Authorized first!"
-    } else {
-      player.connect();
-      if (isBadPosture(resp)) {
-         player.setVolume(0.5);
-       } else {
-         player.setVolume(1.0);
-       }
-    }
-  }
-
-  function beepAction(resp, controls) {
-    displayUpdateAction(resp, controls);
-    if (isBadPosture(resp)) {
-       beep();
-     }
-  }
-
-  function beep() {
-    var snd = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgYtAgAyN+QWaAAihwMWm4G8QQRDiMcCBcH3Cc+CDv/7xA4Tvh9Rz/y8QADBwMWgQAZG/ILNAARQ4GLTcDeIIIhxGOBAuD7hOfBB3/94gcJ3w+o5/5eIAIAAAVwWgQAVQ2ORaIQwEMAJiDg95G4nQL7mQVWI6GwRcfsZAcsKkJvxgxEjzFUgfHoSQ9Qq7KNwqHwuB13MA4a1q/DmBrHgPcmjiGoh//EwC5nGPEmS4RcfkVKOhJf+WOgoxJclFz3kgn//dBA+ya1GhurNn8zb//9NNutNuhz31f////9vt///z+IdAEAAAK4LQIAKobHItEIYCGAExBwe8jcToF9zIKrEdDYIuP2MgOWFSE34wYiR5iqQPj0JIeoVdlG4VD4XA67mAcNa1fhzA1jwHuTRxDUQ//iYBczjHiTJcIuPyKlHQkv/LHQUYkuSi57yQT//uggfZNajQ3Vmz+Zt//+mm3Wm3Q576v////+32///5/EOgAAADVghQAAAAA//uQZAUAB1WI0PZugAAAAAoQwAAAEk3nRd2qAAAAACiDgAAAAAAABCqEEQRLCgwpBGMlJkIz8jKhGvj4k6jzRnqasNKIeoh5gI7BJaC1A1AoNBjJgbyApVS4IDlZgDU5WUAxEKDNmmALHzZp0Fkz1FMTmGFl1FMEyodIavcCAUHDWrKAIA4aa2oCgILEBupZgHvAhEBcZ6joQBxS76AgccrFlczBvKLC0QI2cBoCFvfTDAo7eoOQInqDPBtvrDEZBNYN5xwNwxQRfw8ZQ5wQVLvO8OYU+mHvFLlDh05Mdg7BT6YrRPpCBznMB2r//xKJjyyOh+cImr2/4doscwD6neZjuZR4AgAABYAAAABy1xcdQtxYBYYZdifkUDgzzXaXn98Z0oi9ILU5mBjFANmRwlVJ3/6jYDAmxaiDG3/6xjQQCCKkRb/6kg/wW+kSJ5//rLobkLSiKmqP/0ikJuDaSaSf/6JiLYLEYnW/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAAAAAE0VZQKw9ISAAACgAAAAAVQIygIElVrFkBS+Jhi+EAuu+lKAkYUEIsmEAEoMeDmCETMvfSHTGkF5RWH7kz/ESHWPAq/kcCRhqBtMdokPdM7vil7RG98A2sc7zO6ZvTdM7pmOUAZTnJW+NXxqmd41dqJ6mLTXxrPpnV8avaIf5SvL7pndPvPpndJR9Kuu8fePvuiuhorgWjp7Mf/PRjxcFCPDkW31srioCExivv9lcwKEaHsf/7ow2Fl1T/9RkXgEhYElAoCLFtMArxwivDJJ+bR1HTKJdlEoTELCIqgEwVGSQ+hIm0NbK8WXcTEI0UPoa2NbG4y2K00JEWbZavJXkYaqo9CRHS55FcZTjKEk3NKoCYUnSQ0rWxrZbFKbKIhOKPZe1cJKzZSaQrIyULHDZmV5K4xySsDRKWOruanGtjLJXFEmwaIbDLX0hIPBUQPVFVkQkDoUNfSoDgQGKPekoxeGzA4DUvnn4bxzcZrtJyipKfPNy5w+9lnXwgqsiyHNeSVpemw4bWb9psYeq//uQZBoABQt4yMVxYAIAAAkQoAAAHvYpL5m6AAgAACXDAAAAD59jblTirQe9upFsmZbpMudy7Lz1X1DYsxOOSWpfPqNX2WqktK0DMvuGwlbNj44TleLPQ+Gsfb+GOWOKJoIrWb3cIMeeON6lz2umTqMXV8Mj30yWPpjoSa9ujK8SyeJP5y5mOW1D6hvLepeveEAEDo0mgCRClOEgANv3B9a6fikgUSu/DmAMATrGx7nng5p5iimPNZsfQLYB2sDLIkzRKZOHGAaUyDcpFBSLG9MCQALgAIgQs2YunOszLSAyQYPVC2YdGGeHD2dTdJk1pAHGAWDjnkcLKFymS3RQZTInzySoBwMG0QueC3gMsCEYxUqlrcxK6k1LQQcsmyYeQPdC2YfuGPASCBkcVMQQqpVJshui1tkXQJQV0OXGAZMXSOEEBRirXbVRQW7ugq7IM7rPWSZyDlM3IuNEkxzCOJ0ny2ThNkyRai1b6ev//3dzNGzNb//4uAvHT5sURcZCFcuKLhOFs8mLAAEAt4UWAAIABAAAAAB4qbHo0tIjVkUU//uQZAwABfSFz3ZqQAAAAAngwAAAE1HjMp2qAAAAACZDgAAAD5UkTE1UgZEUExqYynN1qZvqIOREEFmBcJQkwdxiFtw0qEOkGYfRDifBui9MQg4QAHAqWtAWHoCxu1Yf4VfWLPIM2mHDFsbQEVGwyqQoQcwnfHeIkNt9YnkiaS1oizycqJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
-    snd.play();
-  }
-  </script>
+      function beep() {
+        var snd = new Audio(
+          "data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
+        );
+        snd.play();
+      }
+    </script>
 </body>
