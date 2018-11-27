@@ -55,6 +55,7 @@ var SensorReader = (function ($, w) {
     "setControls" : (c) => {controls = c; return true;},
     "start" : () => {isActive = true; return true;},
     "stop" : () => {isActive = false; return false;},
+    "single_read" : sensor_read_deferred,
     "isRunning" : () => {return isActive;}
   }
 }(jQuery, window))
