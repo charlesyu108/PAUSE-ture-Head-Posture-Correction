@@ -26,6 +26,10 @@
             <button id="calibrate" class="btn btn-primary">Calibrate Sensors</button>
             <p> Left Baseline: <span id="left-base"> N/A</span>mm</p>
             <p> Right Baseline: <span id="right-base"> N/A</span>mm</p>
+            Sensitivity: <br>
+            <input type="radio" name="sensitivity" value="1" checked="checked"> High
+            <input type="radio" name="sensitivity" value="2"> Med
+            <input type="radio" name="sensitivity" value="3"> Low
           </div>
         </div>
       </div>
@@ -140,19 +144,28 @@
       }
     });
 
+    $('input[type=radio][name=sensitivity]').change(function() {
+      let opt = this.value;
+      if (opt == 1) threshold_mm = 10;
+      if (opt == 2) threshold_mm = 20;
+      if (opt == 3) threshold_mm = 40;
+    });
+
     // ============= ACTIONS ===========
     // GLOBALS FOR KEEPING A BASELINE READ
     var left_calibrate = null;
     var right_calibrate = null;
+    var threshold_mm = 10;
 
     function isBadPosture(resp) {
       let left_read = resp["read"][0];
       let right_read = resp["read"][1];
       if (left_calibrate && right_calibrate)
       {
+        console.log(threshold_mm);
         let left_diff = Math.abs(left_read - left_calibrate);
         let right_diff = Math.abs(right_read - right_calibrate);
-        return (left_diff > 20 || right_diff > 20);
+        return (left_diff > threshold_mm || right_diff > threshold_mm);
       }
       // By default (uncalibrated, return if lopsided.)
       return Math.abs(left_read - right_read) > 40;
