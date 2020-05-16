@@ -4,6 +4,12 @@ Code repository for the protoype PAUSE-ture Head Posture Correction system, a pr
 The PAUSE-ture system is served off a Raspberry Pi that connects to sensor-equipped pair of headphones. A user can interact with
 the system by navigating to `https://raspberrypi.local:5000` in their browser.
 
+For more information, see the writeup PDF included in this repo.
+
+![User Study Image](assets/userstudy1.png)
+
+![Device Close Up](assets/devicecloseup.jpg)
+
 ## Requirements
 
 ### Hardware specs for running right out of the box
@@ -37,7 +43,11 @@ This repository contains certain artifacts that allow for mocked development
 on a non-Raspberry Pi device or for production on a Raspberry Pi. You can set the mode via the `config.ini file`. 
 **NOTE: The mocked development environment requires you to run `pip install -r requirements.txt` (Python3) to get the right dependencies**
 
-### Organization ###
+## Architecture Digram
+
+![Architecture Diagram](assets/architecture.png)
+
+## Organization 
 ```
 ├── app.py                        # The flask app that serves the UI
 ├── requirements.txt              # Non-RPI requirements
@@ -52,3 +62,4 @@ on a non-Raspberry Pi device or for production on a Raspberry Pi. You can set th
         ├── sensor-read.js        # Facilitates requests to server for sensor reads & UI response
         └── spotify-maker.js      # Facilitates Spotify Authorization
  ```
+
